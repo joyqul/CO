@@ -8,9 +8,6 @@
 
         li $v0, 8 # read string syscall
         la $a0, mainstr
-        
-        # s0: for input string
-        move $s0, $a0
         syscall
 
         li $v0, 4 # print string syscall
@@ -20,53 +17,41 @@
         li $v0, 8 # read string syscall
         la $a0, substr
         la $a1, 5 # limit string len as 4
-        
-        # s1: for input substring
-        move $s1, $a0
         syscall
 
     StrLen:
+        la $a0, mainstr
         addi $t0, $zero, 0 # t0: i = 0
     
         StrLenLoop:
-            lb $t1, 0($s0) 
-            beq $t1, $zero, TEST
-#beq $t1, $zero, PrintRevStr
+            add $t1, $t0, $a0
+            lb $t2, 0($t1) 
+            beq $t2, $zero, PrintRevStr
             addi $t0, $t0, 1 # i = i + 1
-            addi $s0, $s0, 1 # addr = addr + 1
             j StrLenLoop
-
-        TEST:
-            li $v0, 1
-            move $a0, $t0
-            syscall
             
         PrintRevStr:
-            addi $t0, $t0, -1
-            addi $s0, $s0, -1
-            sw $s2, 0($sp)
-            add $s2, $zero, $zero
+            addi $t0, $t0, -2
+            addi $t1, $zero, 0 # j = 0
+            la $a2, revstr
 
             PrintRevStrLoop:
+                add $t2, $a2, $t1
+                add $t3, $a0, $t0
+                lbu $t4, 0($t3)
+                sb $t4, 0($t2) # a2[j] = a0[i]
                 beq $t0, $zero, StrLenExit
-                sb $s2, 0($s0)
-                addi $s2, $s2, 1
                 addi $t0, $t0, -1
-                addi $s0, $s0, -1
+                addi $t1, $t1, 1
+                j PrintRevStrLoop
 
         StrLenExit:
-            lw $s2, 0($sp)
-            li $v0, 4 # print string syscall
-            move $a0, $s0
-            la $a0, revstr
-            syscall
-            jr $ra
-                   
-                
 
     PrintOutput:
         li $v0, 4 # print string syscall
         la $a0, outprint1
+        syscall
+        la $a0, revstr
         syscall
         la $a0, outprint2
         syscall
@@ -79,4 +64,4 @@
     inprint1: .asciiz "Please enter main string:"
     inprint2: .asciiz "\nPlease enter pattern string:"
     outprint1: .asciiz "\nThe reversed main string:"
-    outprint2: .asciiz "\nThe number of substrings to match pattern string:"
+    outprint2: .asciiz "\n\nThe number of substrings to match pattern string:"
