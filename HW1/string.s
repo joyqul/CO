@@ -31,7 +31,9 @@
             j StrLenLoop
             
         PrintRevStr:
-            addi $t0, $t0, -2
+            addi $t0, $t0, -1
+            addi $s0, $t0, 0 # save string len
+            addi $t0, $t0, -1
             addi $t1, $zero, 0 # j = 0
             la $a2, revstr
 
@@ -45,7 +47,54 @@
                 addi $t1, $t1, 1
                 j PrintRevStrLoop
 
-        StrLenExit:
+    StrLenExit:
+
+    SubStrLen:
+        la $a0, substr
+        addi $t0, $zero, 0 # t0: i = 0
+    
+        SubStrLenLoop:
+            add $t1, $t0, $a0
+            lb $t2, 0($t1) 
+            beq $t2, $zero, SubStrLenExit
+            addi $t0, $t0, 1 # i = i + 1
+            j SubStrLenLoop
+
+    SubStrLenExit:
+        addi $t0, $t0, -1
+        addi $s1, $t0, 0 # save substring len
+
+    CalSubStr:
+        la $a0, mainstr
+        la $a2, substr
+        sub $s0, $s0, $s1 # i = main str len - sub str len
+        addi $s2, $zero, 0
+        addi $t0, $zero, 0 # i = 0, for mainstr start
+
+        CalSubStrLoop1:
+            addi $t1, $zero, 0 # j = 0, for substr start
+            add $t2, $a0, $t0 # t2 = a0[i]
+
+            CalSubStrLoop2:
+                beq $s1, $t1, Match
+                add $t2, $t2, $t1 # t2 = a0[i+j]
+                lbu $t3, 0($t2)
+                add $t4, $a2, $t1 # t4 = a2[j]
+                lbu $t5, 0($t4)
+                addi, $t1, $t1, 1
+                beq $t3, $t5, CalSubStrLoop2
+                j CalSubStrLoop2Exit
+
+            Match:
+                addi $s2, $s2, 1
+
+            CalSubStrLoop2Exit:
+                beq $t0, $s0, CalSubStrLoop1Exit  # if i = main string len, exit
+                addi $t0, $t0, 1
+                j CalSubStrLoop1
+                
+        CalSubStrLoop1Exit:
+            
 
     PrintOutput:
         li $v0, 4 # print string syscall
@@ -55,7 +104,9 @@
         syscall
         la $a0, outprint2
         syscall
-
+        li $v0, 1
+        move $a0, $s2
+        syscall
         jr $ra
 .data
     mainstr: .space 32 #offer a 32-byte space to store string
