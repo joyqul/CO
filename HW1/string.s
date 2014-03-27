@@ -67,22 +67,23 @@
     CalSubStr:
         la $a0, mainstr
         la $a2, substr
-        sub $s0, $s0, $s1 # i = main str len - sub str len
+        sub $s0, $s0, $s1 # main str len - sub str len
         addi $s2, $zero, 0
         addi $t0, $zero, 0 # i = 0, for mainstr start
 
         CalSubStrLoop1:
             addi $t1, $zero, 0 # j = 0, for substr start
             add $t2, $a0, $t0 # t2 = a0[i]
+            addi $t3, $a2, 0 # t3 = a2[0]
 
             CalSubStrLoop2:
                 beq $s1, $t1, Match
-                add $t2, $t2, $t1 # t2 = a0[i+j]
-                lbu $t3, 0($t2)
-                add $t4, $a2, $t1 # t4 = a2[j]
-                lbu $t5, 0($t4)
+                lbu $t4, 0($t2)
+                lbu $t5, 0($t3)
+                addi $t2, $t2, 1 # t2 = a0[i+j]
+                addi $t3, $t3, 1 # t3 = a2[j]
                 addi, $t1, $t1, 1
-                beq $t3, $t5, CalSubStrLoop2
+                beq $t4, $t5, CalSubStrLoop2
                 j CalSubStrLoop2Exit
 
             Match:
