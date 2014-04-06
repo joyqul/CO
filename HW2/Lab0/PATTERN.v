@@ -21,6 +21,7 @@ input [5:0] outdata;
 // PARAMETER DECLARATION
 //---------------------------------------------------------------------
 real  CYCLE = 5.0; //5ns
+integer seed;
 parameter MAX_PATTERN_NUM = 1000;
 
 parameter [1:0] OR  = 2'd0;
@@ -43,11 +44,14 @@ always #(CYCLE/2)begin
 end
 
 initial begin
+  $dumpfile("marquee.vcd");
+  $dumpvars(0, u_marquee);
   clk = 1'b0;
   rst = 1'b0;
   indataA = 3'd0;
   indataB = 3'd0;
   counter = 2'd0;
+  seed = 0;
   
   //send reset signal 
   @(negedge clk);
@@ -58,8 +62,8 @@ initial begin
   for(i=0; i<MAX_PATTERN_NUM; i=i+1)begin
     //set input data
     @(posedge clk);
-    indataA = $random();
-    indataB = $random();
+    indataA = $random(seed);
+    indataB = $random(seed);
     counter = counter + 2'd1;
     
     Calulate_Correct_Answer(indataA,indataB,ANSWER);
@@ -116,5 +120,13 @@ begin
 end
 endtask
 
+
+marquee u_marquee(
+  .clk(clk),
+  .rst(rst),
+  .indataA(indataA),
+  .indataB(indataB),
+  .outdata(outdata)
+);
 
 endmodule
