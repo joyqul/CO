@@ -40,14 +40,69 @@ input         B_invert;
 input         cin;
 input [2-1:0] operation;
 
-output        result;
-output        cout;
+output reg    result;
+output reg    cout;
 
-reg           result;
-
-always@( src1_temp or src2_temp or operation )
+always@(*)
 begin
 
+    case (operation)
+        // AND
+        2'b00: begin
+            if (A_invert & B_invert) result = ~src1 & ~src2;
+            else if (A_invert & ~B_invert) result = ~src1 & src2;
+            else if (~A_invert & B_invert) result = src1 & ~src2;
+            else result = src1 & src2;
+            cout = 0;
+        end
+        // OR
+        2'b01: begin
+            if (A_invert & B_invert) result = ~src1 | ~src2;
+            else if (A_invert & ~B_invert) result = ~src1 | src2;
+            else if (~A_invert & B_invert) result = src1 | ~src2;
+            else result = src1 | src2;
+            cout = 0;
+        end
+        // ADD
+        2'b10: begin
+            if (A_invert & B_invert) begin
+                result = ~src1 ^ ~src2 ^ cin;
+                cout = (~src1 & ~src2) | ((~src1 | ~src2) & cin);
+            end 
+            else if (A_invert & ~B_invert) begin
+                result = ~src1 ^ src2 ^ cin;
+                cout = (~src1 & src2) | ((~src1 | src2) & cin);
+            end
+            else if (~A_invert & B_invert) begin
+                result = src1 ^ ~src2 ^ cin;
+                cout = (src1 & ~src2) | ((src1 | ~src2) & cin);
+            end
+            else begin
+                result = src1 ^ src2 ^ cin;
+                cout = (src1 & src2) | ((src1 | src2) & cin);
+            end
+        end
+        // SLT
+        4'b11: begin
+            if (A_invert & B_invert) begin
+                result = src1 & ~src2;
+            end 
+            else if (A_invert & ~B_invert) begin
+                result = src1 ^ src2;
+            end
+            else if (~A_invert & B_invert) begin
+                result = ~src1 ^ ~src2;
+            end
+            else begin
+                result = ~src1 ^ src2;
+            end
+            cout = 0;
+        end
+        default: begin
+            result = result;
+            cout = cout;
+        end
+    endcase
 end
 
 endmodule
