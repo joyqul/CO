@@ -33,7 +33,7 @@ wire   [32-1:0] b_cin, b_cout, b_result;
 wire            set;
 
 assign b_cin = {b_cout[30:0], redundent};
-assign set = ((~src1[31] & src2[31] & (~src1[31] ^ src2[31] ^ b_cout[30])) | (src1[31] & ~src2[31] & ~(~src1[31] ^ src2[31] ^ b_cout[30])));
+assign set = (src1[31] & ~src2[31]) | (scr[31] ^ ~src2[31] ^ b_cout[30]);
 
 // result
 always@( posedge clk or negedge rst_n) begin
