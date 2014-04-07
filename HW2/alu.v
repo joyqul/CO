@@ -1,25 +1,5 @@
 `timescale 1ns/1ps
 
-//////////////////////////////////////////////////////////////////////////////////
-// Company:
-// Engineer:
-//
-// Create Date:    15:15:11 08/18/2013
-// Design Name:
-// Module Name:    alu
-// Project Name:
-// Target Devices:
-// Tool versions:
-// Description:
-//
-// Dependencies:
-//
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-//
-//////////////////////////////////////////////////////////////////////////////////
-
 module alu(
            clk,           // system clock              (input)
            rst_n,         // negative reset            (input)
@@ -37,111 +17,153 @@ input           clk;
 input           rst_n;
 input  [32-1:0] src1;
 input  [32-1:0] src2;
-input  [4-1:0] ALU_control;
+input  [4-1:0]  ALU_control;
 //input   [3-1:0] bonus_control; 
 
-output [32-1:0] result;
-output          zero;
-output          cout;
-output          overflow;
+output reg [32-1:0] result;
+output reg          zero;
+output reg          cout;
+output reg          overflow;
 
-reg    [32-1:0] result;
-reg             zero;
-reg             cout;
-reg             overflow;
 
+// internal operation
 reg             less, A_invert, B_invert, redundent;
 reg    [2-1:0]  operation;
 wire   [32-1:0] b_cin, b_cout, b_result;
 wire            set;
 
 assign b_cin = {b_cout[30:0], redundent};
+assign set = ((~src1[31] & src2[31] & (~src1[31] ^ src2[31] ^ b_cout[30])) | (src1[31] & ~src2[31] & ~(~src1[31] ^ src2[31] ^ b_cout[30])));
 
-always@( posedge clk or negedge rst_n ) begin
-	if(!rst_n) begin
+// result
+always@( posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
         result = 0;
-        zero = 0;
-        cout = 0;
-        overflow = 0;
-        less = 0;
-        redundent = 0;
-        A_invert = 0;
-        B_invert = 0;
-        operation = 0;
-	end
-	else begin
+    end
+    else begin
         result = b_result;
-        cout = b_cout[31];
+    end
+end
+
+// less
+always@( posedge clk or negedge rst_n) begin
+    less = 0;
+end
+
+// cout 
+always@( posedge clk or negedge rst_n) begin
+    if (!rst_n) cout = 0;
+    else cout = b_cout[31];
+end
+
+// overflow
+always@( posedge clk or negedge rst_n) begin
+    if (!rst_n) overflow = 0;
+    else begin
         case (ALU_control)
             4'b0010: overflow = (src1[31] & src2[31] & ~result[31]) | (~src1[31] & ~src2[31] & result[31]);
             4'b0110: overflow = (~src1[31] & src2[31] & result[31]) | (src1[31] & ~src2[31] & ~result[31]);
             default: overflow = 0;
         endcase
-	end
+    end
 end
-
+        
+// operation
 always@(*) begin
-    case (ALU_control)
-        // AND
-        4'b000: begin
-            operation = 0;
-            redundent = 0;
-            A_invert = 0;
-            B_invert = 0;
-            zero = result == 0? 1: 0;
-            cout = b_cout[31];
-        end
-        // OR
-        4'b0001: begin
-            operation = 1;
-            redundent = 0;
-            A_invert = 0;
-            B_invert = 0;
-            zero = result == 0? 1: 0;
-        end
-        // ADD
-        4'b0010: begin
-            operation = 2;
-            redundent = 0;
-            A_invert = 0;
-            B_invert = 0;
-            zero = result == 0? 1: 0;
-        end
-        // SUB
-        4'b0110: begin
-            operation = 2;
-            redundent = 1;
-            A_invert = 0;
-            B_invert = 1;
-            zero = result == 0? 1: 0;
-        end
-        // NOR
-        4'b1100: begin
-            operation = 1;
-            redundent = 0;
-            A_invert = 0;
-            B_invert = 1;
-            zero = result == 0? 1: 0;
-        end
-        // SLT
-        4'b0111: begin
-            operation = 3;
-            redundent = 1;
-            A_invert = 0;
-            B_invert = 0;
-            zero = result == 0? 1: 0;
-        end
-        default: begin
-            operation = 0;
-            redundent = 0;
-            A_invert = 0;
-            B_invert = 0;
-            zero = 0;
-        end
-    endcase
+    if (!rst_n) operation = 0;
+    else begin
+        case (ALU_control)
+            // AND
+            4'b000: operation = 0;
+            // OR
+            4'b0001: operation = 1;
+            // ADD
+            4'b0010: operation = 2;
+            // SUB
+            4'b0110: operation = 2;
+            // NOR
+            4'b1100: operation = 1;
+            // SLT
+            4'b0111: operation = 3;
+            default: operation = operation;
+        endcase
+    end
 end
 
-assign set = ((~src1[31] & src2[31] & (~src1[31] ^ src2[31] ^ b_cout[30])) | (src1[31] & ~src2[31] & ~(~src1[31] ^ src2[31] ^ b_cout[30])));
+// A_invert, B_invert
+always@(*) begin
+    if (!rst_n) begin
+        A_invert = 0;
+        B_invert = 0;
+    end
+    else begin
+        case (ALU_control)
+            // AND
+            4'b000: begin
+                A_invert = 0;
+                B_invert = 0;
+            end
+            // OR
+            4'b0001: begin
+                A_invert = 0;
+                B_invert = 0;
+            end
+            // ADD
+            4'b0010: begin
+                A_invert = 0;
+                B_invert = 0;
+            end
+            // SUB
+            4'b0110: begin
+                A_invert = 0;
+                B_invert = 1;
+            end
+            // NOR
+            4'b1100: begin
+                A_invert = 0;
+                B_invert = 1;
+            end
+            // SLT
+            4'b0111: begin
+                A_invert = 0;
+                B_invert = 0;
+            end
+            default: begin
+                A_invert = A_invert;
+                B_invert = B_invert;
+            end
+        endcase
+    end
+end
+
+// zero 
+always@(*) begin
+    if (!rst_n) zero = 0;
+    else zero = result == 0? 1: 0;
+end
+
+// redundent
+always@(*) begin
+    if (!rst_n) redundent = 0;
+    else begin
+        case (ALU_control)
+            // AND
+            4'b000: redundent = 0;
+            // OR
+            4'b0001: redundent = 0;
+            // ADD
+            4'b0010: redundent = 0;
+            // SUB
+            4'b0110: redundent = 1;
+            // NOR
+            4'b1100: redundent = 0;
+            // SLT
+            4'b0111: redundent = 1;
+            default: redundent = redundent;
+        endcase
+    end
+end
+
 
 alu_top alu_top0(
                .src1(src1[0]),       //1 bit source 1 (input)
