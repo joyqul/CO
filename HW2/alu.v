@@ -53,6 +53,7 @@ reg             overflow;
 reg             less, A_invert, B_invert, redundent;
 reg    [2-1:0]  operation;
 wire   [32-1:0] b_cin, b_cout, b_result;
+wire            set;
 
 assign b_cin = {b_cout[30:0], redundent};
 
@@ -73,7 +74,7 @@ always@( posedge clk or negedge rst_n ) begin
 	end
 end
 
-always@( *) begin
+always@(*) begin
     case (ALU_control)
         // AND
         4'b000: begin
@@ -81,6 +82,7 @@ always@( *) begin
             redundent = 0;
             A_invert = 0;
             B_invert = 0;
+            overflow = 0;
         end
         // OR
         4'b0001: begin
@@ -88,6 +90,7 @@ always@( *) begin
             redundent = 0;
             A_invert = 0;
             B_invert = 0;
+            overflow = 0;
         end
         // ADD
         4'b0010: begin
@@ -95,6 +98,7 @@ always@( *) begin
             redundent = 0;
             A_invert = 0;
             B_invert = 0;
+            overflow = (src1[31] & src2[31] & ~result[31]) | (~src1[31] & ~src2[31] & result[31]);
         end
         // SUB
         4'b0110: begin
@@ -102,6 +106,7 @@ always@( *) begin
             redundent = 1;
             A_invert = 0;
             B_invert = 1;
+            overflow = (~src1[31] & src2[31] & result[31]) | (src1[31] & ~src2[31] & ~result[31]);
         end
         // NOR
         4'b1100: begin
@@ -109,23 +114,33 @@ always@( *) begin
             redundent = 0;
             A_invert = 0;
             B_invert = 1;
+            overflow = 0;
         end
         // SLT
         4'b0111: begin
-            operation = 1;
+            operation = 3;
+            redundent = 1;
+            A_invert = 0;
+            B_invert = 0;
+            overflow = ((~src1[31] & src2[31] & (~src1[31] ^ src2[31] ^ b_cout[30])) |
+                    (src1[31] & ~src2[31] & ~(~src1[31] ^ src2[31] ^ b_cout[30])));
+        end
+        default: begin
+            operation = 0;
             redundent = 0;
             A_invert = 0;
             B_invert = 0;
-        end
-        default: begin
+            overflow = 0;
         end
     endcase
 end
 
+assign set = overflow;
+
 alu_top alu_top0(
                .src1(src1[0]),       //1 bit source 1 (input)
                .src2(src2[0]),       //1 bit source 2 (input)
-               .less(less),       //1 bit less     (input)
+               .less(set),       //1 bit less     (input)
                .A_invert(A_invert),   //1 bit A_invert (input)
                .B_invert(B_invert),   //1 bit B_invert (input)
                .cin(b_cin[0]),        //1 bit carry in (input)

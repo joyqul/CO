@@ -45,7 +45,6 @@ output reg    cout;
 
 always@(*)
 begin
-
     case (operation)
         // AND
         2'b00: begin
@@ -84,19 +83,8 @@ begin
         end
         // SLT
         4'b11: begin
-            if (A_invert & B_invert) begin
-                result = src1 & ~src2;
-            end 
-            else if (A_invert & ~B_invert) begin
-                result = src1 ^ src2;
-            end
-            else if (~A_invert & B_invert) begin
-                result = ~src1 ^ ~src2;
-            end
-            else begin
-                result = ~src1 ^ src2;
-            end
-            cout = 0;
+            cout = (~src1 & src2) | ((~src1 | src2) & cin);
+            result = less;
         end
         default: begin
             result = result;
