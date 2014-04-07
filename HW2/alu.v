@@ -71,6 +71,12 @@ always@( posedge clk or negedge rst_n ) begin
 	end
 	else begin
         result = b_result;
+        cout = b_cout[31];
+        case (ALU_control)
+            4'b0010: overflow = (src1[31] & src2[31] & ~result[31]) | (~src1[31] & ~src2[31] & result[31]);
+            4'b0110: overflow = (~src1[31] & src2[31] & result[31]) | (src1[31] & ~src2[31] & ~result[31]);
+            default: overflow = 0;
+        endcase
 	end
 end
 
@@ -82,7 +88,8 @@ always@(*) begin
             redundent = 0;
             A_invert = 0;
             B_invert = 0;
-            overflow = 0;
+            zero = result == 0? 1: 0;
+            cout = b_cout[31];
         end
         // OR
         4'b0001: begin
@@ -90,7 +97,7 @@ always@(*) begin
             redundent = 0;
             A_invert = 0;
             B_invert = 0;
-            overflow = 0;
+            zero = result == 0? 1: 0;
         end
         // ADD
         4'b0010: begin
@@ -98,7 +105,7 @@ always@(*) begin
             redundent = 0;
             A_invert = 0;
             B_invert = 0;
-            overflow = (src1[31] & src2[31] & ~result[31]) | (~src1[31] & ~src2[31] & result[31]);
+            zero = result == 0? 1: 0;
         end
         // SUB
         4'b0110: begin
@@ -106,7 +113,7 @@ always@(*) begin
             redundent = 1;
             A_invert = 0;
             B_invert = 1;
-            overflow = (~src1[31] & src2[31] & result[31]) | (src1[31] & ~src2[31] & ~result[31]);
+            zero = result == 0? 1: 0;
         end
         // NOR
         4'b1100: begin
@@ -114,7 +121,7 @@ always@(*) begin
             redundent = 0;
             A_invert = 0;
             B_invert = 1;
-            overflow = 0;
+            zero = result == 0? 1: 0;
         end
         // SLT
         4'b0111: begin
@@ -122,20 +129,19 @@ always@(*) begin
             redundent = 1;
             A_invert = 0;
             B_invert = 0;
-            overflow = ((~src1[31] & src2[31] & (~src1[31] ^ src2[31] ^ b_cout[30])) |
-                    (src1[31] & ~src2[31] & ~(~src1[31] ^ src2[31] ^ b_cout[30])));
+            zero = result == 0? 1: 0;
         end
         default: begin
             operation = 0;
             redundent = 0;
             A_invert = 0;
             B_invert = 0;
-            overflow = 0;
+            zero = 0;
         end
     endcase
 end
 
-assign set = overflow;
+assign set = ((~src1[31] & src2[31] & (~src1[31] ^ src2[31] ^ b_cout[30])) | (src1[31] & ~src2[31] & ~(~src1[31] ^ src2[31] ^ b_cout[30])));
 
 alu_top alu_top0(
                .src1(src1[0]),       //1 bit source 1 (input)

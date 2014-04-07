@@ -148,8 +148,12 @@ end
 
 always@(negedge clk) begin
     if(start_check) begin
-        if(pattern_count)
+        if(pattern_count) begin
             if(result_out == result_correct) begin
+               $display(" No.%2d error!",pattern_count-1);
+            $display(" Currect result: %h     Currect ZCV: %b",result_correct, zcv_correct[3-1:0]);
+            $display(" Your result: %h     Your ZCV: %b\n",result_out, zcv_out);
+                $display("***************************************************");    
                 if((mem_opcode[pattern_count-2] == 4'd2) || (mem_opcode[pattern_count-2] == 4'd6) && (zcv_out == zcv_correct[3-1:0])) begin
                 end
                 else if(zcv_out[2] == zcv_correct[2]) begin
@@ -173,6 +177,7 @@ always@(negedge clk) begin
                 $display("***************************************************");    
                 error_count <= error_count + 6'd1;
             end
+        end
     end
 end
 
