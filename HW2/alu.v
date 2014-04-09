@@ -82,7 +82,7 @@ always@(*) begin
             // SUB
             4'b0110: operation = 2;
             // NOR
-            4'b1100: operation = 1;
+            4'b1100: operation = 0;
             // SLT
             4'b0111: operation = 3;
             default: operation = operation;
@@ -120,7 +120,7 @@ always@(*) begin
             end
             // NOR
             4'b1100: begin
-                A_invert = 0;
+                A_invert = 1;
                 B_invert = 1;
             end
             // SLT
