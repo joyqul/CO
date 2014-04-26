@@ -1,1 +1,2 @@
-iverilog -o test testbench.v alu_top.v alu.v
+iverilog -o cpu *v
+vvp cpu
