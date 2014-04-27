@@ -42,7 +42,7 @@ wire           Branch_o;
 assign ALU_op_o = (instr_op_i == 6'b000000)? 3'b010: // R-type
                   (instr_op_i == 6'b000100)? 3'b001: // BEQ
                   (instr_op_i == 6'b001000)? 3'b011: // ADDI
-                  (instr_op_i == 6'b001010)? 3'b011: // SLTI
+                  (instr_op_i == 6'b001010)? 3'b100: // SLTI
                   3'b0;
 // ALUSrc_o
 assign ALUSrc_o = (instr_op_i == 6'b000000)? 0: // R-type
