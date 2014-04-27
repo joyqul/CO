@@ -82,7 +82,7 @@ begin
             end
         end
         // SLT
-        4'b11: begin
+        2'b11: begin
             cout = (~src1 & src2) | ((~src1 | src2) & cin);
             result = less;
         end
