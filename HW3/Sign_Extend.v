@@ -19,13 +19,10 @@ input   [16-1:0] data_i;
 output  [32-1:0] data_o;
 
 //Internal Signals
-reg     [32-1:0] data_o;
+wire    [32-1:0] data_o;
 
 //Sign extended
-always@(*) begin
-    if (data_i[15] == 1) data_o = {16'b1111111111111111, data_i};
-    else data_o = {16'b0000000000000000, data_i};
-end
+assign data_o = (data_i[15] == 1)? {16'b1111111111111111, data_i}: {16'b0000000000000000, data_i};
           
 endmodule      
      

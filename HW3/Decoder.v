@@ -28,124 +28,45 @@ output         RegDst_o;
 output         Branch_o;
  
 //Internal Signals
-reg    [3-1:0] ALU_op_o;
-reg            ALUSrc_o;
-reg            RegWrite_o;
-reg            RegDst_o;
-reg            Branch_o;
+wire   [3-1:0] ALU_op_o;
+wire           ALUSrc_o;
+wire           RegWrite_o;
+wire           RegDst_o;
+wire           Branch_o;
 
 //Parameter
 
 
 //Main function
 // ALU_op_o
-always@(*) begin
-    case (instr_op_i)
-        // R-type (ADD, ...etc)
-        6'b00-0000: begin
-            ALU_op_o <= 3'b010;
-        end
-        // BEQ
-        6'b00-0100: begin
-            ALU_op_o <= 3'b001;
-        end
-        // ADDI
-        6'b00-1000: begin
-            ALU_op_o <= 3'b011;
-        end
-        // SLTI
-        6'b00-1010: begin
-            ALU_op_o <= 3'b111;
-        end
-    endcase
-end
-
+assign ALU_op_o = (instr_op_i == 6'b000000)? 3'b010: // R-type
+                  (instr_op_i == 6'b000100)? 3'b001: // BEQ
+                  (instr_op_i == 6'b001000)? 3'b011: // ADDI
+                  (instr_op_i == 6'b001010)? 3'b011: // SLTI
+                  3'b0;
 // ALUSrc_o
-always@(*) begin
-    case (instr_op_i)
-        // R-type (ADD, ...etc)
-        6'b00-0000: begin
-            ALUSrc_o <= 0;
-        end
-        // BEQ
-        6'b00-0100: begin
-            ALUSrc_o <= 0;
-        end
-        // ADDI
-        6'b00-1000: begin
-            ALUSrc_o <= 1;
-        end
-        // SLTI
-        6'b00-1010: begin
-            ALUSrc_o <= 1;
-        end
-    endcase
-end
-
+assign ALUSrc_o = (instr_op_i == 6'b000000)? 0: // R-type
+                  (instr_op_i == 6'b000100)? 0: // BEQ
+                  (instr_op_i == 6'b001000)? 1: // ADDI
+                  (instr_op_i == 6'b001010)? 1: // SLTI
+                  1'b0;
 // RegWrite_o
-always@(*) begin
-    case (instr_op_i)
-        // R-type (ADD, ...etc)
-        6'b00-0000: begin
-            RegWrite_o <= 1;
-        end
-        // BEQ
-        6'b00-0100: begin
-            RegWrite_o <= 0;
-        end
-        // ADDI
-        6'b00-1000: begin
-            RegWrite_o <= 1;
-        end
-        // SLTI
-        6'b00-1010: begin
-            RegWrite_o <= 1;
-        end
-    endcase
-end
-
+assign RegWrite_o = (instr_op_i == 6'b000000)? 1: // R-type
+                    (instr_op_i == 6'b000100)? 0: // BEQ
+                    (instr_op_i == 6'b001000)? 1: // ADDI
+                    (instr_op_i == 6'b001010)? 1: // SLTI
+                    1'b0;
 // RegDst_o
-always@(*) begin
-    case (instr_op_i)
-        // R-type (ADD, ...etc)
-        6'b00-0000: begin
-            RegDst_o <= 1;
-        end
-        // BEQ
-        6'b00-0100: begin
-            RegDst_o <= 0;
-        end
-        // ADDI
-        6'b00-1000: begin
-            RegDst_o <= 0;
-        end
-        // SLTI
-        6'b00-1010: begin
-            RegDst_o <= 0;
-        end
-    endcase
-end
-
+assign RegDst_o = (instr_op_i == 6'b000000)? 1: // R-type
+                  (instr_op_i == 6'b000100)? 0: // BEQ
+                  (instr_op_i == 6'b001000)? 0: // ADDI
+                  (instr_op_i == 6'b001010)? 0: // SLTI
+                  1'b0;
 // Branch_o
-always@(*) begin
-    case (instr_op_i)
-        // R-type (ADD, ...etc)
-        6'b00-0000: begin
-            Branch_o <= 0;
-        end
-        // BEQ
-        6'b00-0100: begin
-            Branch_o <= 1;
-        end
-        // ADDI
-        6'b00-1000: begin
-            Branch_o <= 0;
-        end
-        // SLTI
-        6'b00-1010: begin
-            Branch_o <= 0;
-        end
-    endcase
-end
+assign Branch_o = (instr_op_i == 6'b000000)? 0: // R-type
+                  (instr_op_i == 6'b000100)? 1: // BEQ
+                  (instr_op_i == 6'b001000)? 0: // ADDI
+                  (instr_op_i == 6'b001010)? 0: // SLTI
+                  1'b0;
 
 endmodule

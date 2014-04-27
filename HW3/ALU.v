@@ -26,40 +26,18 @@ output [32-1:0]	 result_o;
 output           zero_o;
 
 //Internal signals
-reg    [32-1:0]  result_o;
+wire   [32-1:0]  result_o;
 wire             zero_o;
 
 //Parameter
 
 //Main function
 assign zero_o = result_o == 0? 1: 0;
-
-always@(*) begin
-    case (ctrl_i)
-        // AND
-        4'b000: begin
-            result_o = src1_i & src2_i;
-        end
-        // OR
-        4'b0001: begin
-            result_o = src1_i | src2_i;
-        end
-        // ADD
-        4'b0010: begin
-            result_o = src1_i + src2_i;
-        end
-        // SUB
-        4'b0110: begin
-            result_o = src1_i - src2_i;
-        end
-        // SLT
-        4'b0111: begin
-            result_o = src1_i < src2_i? 1: 0;
-        end
-        default: begin
-            result_o = result_o;
-        end
-    endcase
-end
+assign result_o = (ctrl_i == 4'b0000)? src1_i & src2_i: // AND
+                  (ctrl_i == 4'b0001)? src1_i | src2_i: // OR
+                  (ctrl_i == 4'b0010)? src1_i + src2_i: // ADD
+                  (ctrl_i == 4'b0110)? src1_i - src2_i: // SUB
+                  (ctrl_i == 4'b0111)? ((src1_i < src2_i)? 1: 0): // SLT
+                  32'b0;
 
 endmodule

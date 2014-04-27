@@ -25,12 +25,9 @@ input              select_i;
 output  [size-1:0] data_o; 
 
 //Internal Signals
-reg     [size-1:0] data_o;
+wire    [size-1:0] data_o;
 
 //Main function
-always@(*) begin
-    if (select_i == 1) data_o = data1_i;
-    else data_o = data0_i;
-end
+assign data_o = (select_i == 1)? data1_i: data0_i;
 
 endmodule      

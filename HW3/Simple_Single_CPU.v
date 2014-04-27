@@ -18,7 +18,6 @@ input         clk_i;
 input         rst_i;
 
 //Internal Signles
-wire    [32-1:0]    four;
 wire    [32-1:0]    ALUResult;
 wire    [32-1:0]    pc_in, final_pc, pc_out;
 wire    [32-1:0]    sum_pc_four, sign_extend, ALUInput, BranchAddr, shift_left_2;
@@ -30,6 +29,28 @@ wire    [5-1:0]     RDaddr;
 wire    [4-1:0]     ALUCtrl;    
 wire                ALUSrc, Branch, RegWrite, RegDst, ALUZero;
 
+/*
+reg     [6-1:0]     instr_op, funct;
+reg     [5-1:0]     rs, rt, rd, shmt;
+reg     [6-1:0]     instr_op_tmp, funct_tmp;
+reg     [5-1:0]     rs_tmp, rt_tmp, rd_tmp, shmt_tmp;
+
+always@(posedge clk_i) begin
+    instr_op_tmp <= instr[31:26];
+    rs_tmp <= instr[25:21];
+    rt_tmp <= instr[20:16];
+    rd_tmp <= instr[15:11];
+    shmt_tmp <= instr[10:6];
+    funct_tmp <= instr[5:0];
+    instr_op <= instr_op_tmp;
+    rs <= rs_tmp;
+    rt <= rt_tmp;
+    rd <= rd_tmp;
+    shmt <= shmt_tmp;
+    funct <= funct_tmp;
+end
+*/
+
 //Greate componentes
 assign pc_in = (rst_i == 0)? 0: final_pc;
 ProgramCounter PC(
@@ -40,10 +61,9 @@ ProgramCounter PC(
 	    );
 	
 // PC = PC + 4
-assign four = 4;
 Adder Adder1(
         .src1_i(pc_out),     
-	    .src2_i(four),     
+	    .src2_i(32'd4),     
 	    .sum_o(sum_pc_four)    
 	    );
 	
@@ -65,6 +85,10 @@ Reg_File RF(
 	    .rst_i(rst_i) ,     
         .RSaddr_i(instr[25:21]) ,  
         .RTaddr_i(instr[20:16]) ,  
+/*
+        .RSaddr_i(rs) ,  
+        .RTaddr_i(rt) ,  
+*/
         .RDaddr_i(RDaddr) ,  
         .RDdata_i(ALUResult)  , 
         .RegWrite_i (RegWrite),
