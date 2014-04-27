@@ -22,7 +22,17 @@ wire    [32-1:0]    pc_out;
 wire    [32-1:0]    four, sum_pc_four, sign_extend;
 wire    [32-1:0]    instr;
 
+reg     [6-1:0]     instr_op, funct;
+reg     [5-1:0]     rs, rt, rd;
+
 //Greate componentes
+always @(posedge clk_i) begin
+    instr_op = instr[31:26];
+    rs = instr[25:21];
+    rt = instr[20:16];
+    rd = instr[15:11];
+    funct = instr[5:0];
+end
 ProgramCounter PC(
         .clk_i(clk_i),      
 	    .rst_i (rst_i),     
@@ -44,20 +54,21 @@ Instr_Memory IM(
 	    );
 
 // Write Reg
+wire    [5-1:0] RDaddr;
 MUX_2to1 #(.size(5)) Mux_Write_Reg(
-        .data0_i(instr[20:16]),
-        .data1_i(instr[15:11]),
+        .data0_i(rt),
+        .data1_i(rd),
         .select_i(Decoder.RegDst_o),
-        .data_o(RF.RDaddr_i)
+        .data_o(RDaddr)
         );	
 		
 Reg_File RF(
         .clk_i(clk_i),      
-	    .rst_i(rst_i) ,     
-        .RSaddr_i(instr[25:21]) ,  
-        .RTaddr_i(instr[20:16]) ,  
-        .RDaddr_i(Mux_Write_Reg.data_o) ,  
-        .RDdata_i(ALU.result_o)  , 
+	    .rst_i(rst_i),     
+        .RSaddr_i(rs),  
+        .RTaddr_i(rt),  
+        .RDaddr_i(RDaddr),
+        .RDdata_i(ALU.result_o), 
         .RegWrite_i (RegWrite),
         .RSdata_o(ALU.src1_i) ,  
         .RTdata_o(Mux_ALUSrc.data0_i)   
@@ -73,7 +84,7 @@ Decoder Decoder(
 	    );
 
 ALU_Ctrl AC(
-        .funct_i(instr[5:0]),   
+        .funct_i(funct),   
         .ALUOp_i(Decoder.ALU_op_o),   
         .ALUCtrl_o(ALU.ctrl_i) 
         );
