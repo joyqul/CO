@@ -30,6 +30,8 @@ Simple_Single_CPU cpu(
 always #(`CYCLE_TIME/2) CLK = ~CLK;	
 
 initial  begin
+    $dumpfile("cpu.vcd");
+    $dumpvars(0, TestBench);
     handle = $fopen("CO_P2_Result.txt");
 	CLK = 0;
     RST = 0;
