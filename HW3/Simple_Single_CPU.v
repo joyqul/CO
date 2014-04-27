@@ -18,24 +18,15 @@ input         clk_i;
 input         rst_i;
 
 //Internal Signles
-wire    [32-1:0]    four;
-wire    [32-1:0]    ALUResult;
-wire    [32-1:0]    pc_in, final_pc, pc_out;
-wire    [32-1:0]    sum_pc_four, sign_extend, ALUInput, BranchAddr, shift_left_2;
+wire    [32-1:0]    pc_out;
+wire    [32-1:0]    four, sum_pc_four, sign_extend;
 wire    [32-1:0]    instr;
-wire    [32-1:0]    RSdata;
-wire    [32-1:0]    RTdata;
-wire    [3-1:0]     ALUOp;
-wire    [5-1:0]     RDaddr;
-wire    [4-1:0]     ALUCtrl;    
-wire                ALUSrc, Branch, RegWrite, RegDst, ALUZero;
 
 //Greate componentes
-assign pc_in = (rst_i == 0)? 0: final_pc;
 ProgramCounter PC(
         .clk_i(clk_i),      
 	    .rst_i (rst_i),     
-	    .pc_in_i(pc_in) ,   
+	    .pc_in_i(sum_pc_four) ,   
 	    .pc_out_o(pc_out) 
 	    );
 	
@@ -44,7 +35,7 @@ assign four = 4;
 Adder Adder1(
         .src1_i(pc_out),     
 	    .src2_i(four),     
-	    .sum_o(sum_pc_four)    
+	    .sum_o(Mux_PC_Source.data0_i)    
 	    );
 	
 Instr_Memory IM(
@@ -56,8 +47,8 @@ Instr_Memory IM(
 MUX_2to1 #(.size(5)) Mux_Write_Reg(
         .data0_i(instr[20:16]),
         .data1_i(instr[15:11]),
-        .select_i(RegDst),
-        .data_o(RDaddr)
+        .select_i(Decoder.RegDst_o),
+        .data_o(RF.RDaddr_i)
         );	
 		
 Reg_File RF(
@@ -65,26 +56,26 @@ Reg_File RF(
 	    .rst_i(rst_i) ,     
         .RSaddr_i(instr[25:21]) ,  
         .RTaddr_i(instr[20:16]) ,  
-        .RDaddr_i(RDaddr) ,  
-        .RDdata_i(ALUResult)  , 
+        .RDaddr_i(Mux_Write_Reg.data_o) ,  
+        .RDdata_i(ALU.result_o)  , 
         .RegWrite_i (RegWrite),
-        .RSdata_o(RSdata) ,  
-        .RTdata_o(RTdata)   
+        .RSdata_o(ALU.src1_i) ,  
+        .RTdata_o(Mux_ALUSrc.data0_i)   
         );
 	
 Decoder Decoder(
         .instr_op_i(instr[31:26]), 
 	    .RegWrite_o(RegWrite), 
-	    .ALU_op_o(ALUOp),   
-	    .ALUSrc_o(ALUSrc),   
-	    .RegDst_o(RegDst),   
+	    .ALU_op_o(AC.ALUOp_i),   
+	    .ALUSrc_o(Mux_ALUSrc.select_i),   
+	    .RegDst_o(Mux_Write_Reg.select_i),   
 		.Branch_o(Branch)   
 	    );
 
 ALU_Ctrl AC(
         .funct_i(instr[5:0]),   
-        .ALUOp_i(ALUOp),   
-        .ALUCtrl_o(ALUCtrl) 
+        .ALUOp_i(Decoder.ALU_op_o),   
+        .ALUCtrl_o(ALU.ctrl_i) 
         );
 	
 Sign_Extend SE(
@@ -93,38 +84,38 @@ Sign_Extend SE(
         );
 
 MUX_2to1 #(.size(32)) Mux_ALUSrc(
-        .data0_i(RTdata),
+        .data0_i(RF.RTdata_o),
         .data1_i(sign_extend),
-        .select_i(ALUSrc),
-        .data_o(ALUInput)
+        .select_i(Decoder.ALUSrc_o),
+        .data_o(ALU.src2_i)
         );	
 		
 ALU ALU(
-        .src1_i(RSdata),
-	    .src2_i(ALUInput),
-	    .ctrl_i(ALUCtrl),
-	    .result_o(ALUResult),
+        .src1_i(RF.RSdata_o),
+	    .src2_i(Mux_ALUSrc.data_o),
+	    .ctrl_i(AC.ALUCtrl_o),
+	    .result_o(RF.RDdata_i),
 		.zero_o(ALUZero)
 	    );
 		
 // Branch PC add
 Adder Adder2(
         .src1_i(sum_pc_four),     
-	    .src2_i(shift_left_2),     
-	    .sum_o(BranchAddr)      
+	    .src2_i(Shifter.data_o),     
+	    .sum_o(Mux_PC_Source.data1_i)      
 	    );
 		
 Shift_Left_Two_32 Shifter(
         .data_i(sign_extend),
-        .data_o(shift_left_2)
+        .data_o(Adder2.src2_i)
         ); 		
 		
 assign pc_select = Branch & ALUZero;
 MUX_2to1 #(.size(32)) Mux_PC_Source(
-        .data0_i(sum_pc_four),
-        .data1_i(BranchAddr),
+        .data0_i(Adder1.sum_o),
+        .data1_i(Adder2.sum_o),
         .select_i(pc_select),
-        .data_o(final_pc)
+        .data_o(sum_pc_four)
         );	
 
 endmodule
