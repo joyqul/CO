@@ -18,8 +18,9 @@ input         clk_i;
 input         rst_i;
 
 //Internal Signles
-wire    [32-1:0]    pc_out;
-wire    [32-1:0]    four, sum_pc_four, sign_extend;
+wire    [32-1:0]    ALUResult;
+wire    [32-1:0]    pc_in, final_pc, pc_out;
+wire    [32-1:0]    sum_pc_four, sign_extend, ALUInput, BranchAddr, shift_left_2;
 wire    [32-1:0]    instr;
 
 reg     [6-1:0]     instr_op, funct;
@@ -41,11 +42,10 @@ ProgramCounter PC(
 	    );
 	
 // PC = PC + 4
-assign four = 4;
 Adder Adder1(
         .src1_i(pc_out),     
-	    .src2_i(four),     
-	    .sum_o(Mux_PC_Source.data0_i)    
+	    .src2_i(32'd4),     
+	    .sum_o(sum_pc_four)    
 	    );
 	
 Instr_Memory IM(

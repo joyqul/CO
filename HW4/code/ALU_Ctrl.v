@@ -44,12 +44,16 @@ always@(*) begin
                 6'b100101: ALUCtrl_o = 4'b0001;
                 // SLT
                 6'b101010: ALUCtrl_o = 4'b0111;
+                // jr
+                6'b001000: ALUCtrl_o = 4'b1000;
             endcase
         end
         // ADDI
         3: ALUCtrl_o = 4'b0010;
         // SLTI
         4: ALUCtrl_o = 4'b0111;
+        // JAL & JUMP
+        5: ALUCtrl_o = 4'b0000;
     endcase
 end
        
