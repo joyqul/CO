@@ -11,4 +11,4 @@ sw r2 4(r0)
 lw r6 0(r0)
 lw r7 0(r4)
 add r8 r1 r3
-lw r3 4(r1)
+lw r9 4(r1)
