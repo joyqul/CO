@@ -24,13 +24,15 @@ wire    [32-1:0]    sum_pc_four, sign_extend, ALUInput, BranchAddr, shift_left_2
 wire    [32-1:0]    instr;
 wire    [32-1:0]    RSdata, RTdata, RDdata, RFinput, DMResult;
 wire    [3-1:0]     ALUOp;
-wire    [5-1:0]     RDaddr;
+wire    [5-1:0]     RDaddr, RTaddr, RSaddr;
 wire    [4-1:0]     ALUCtrl;    
-wire    [2-1:0]     BranchType, MemToReg;
-wire                ALUSrc, Branch, RegWrite, RegDst, ALUZero, MemRead, MemWrite, Jump;
+wire    [2-1:0]     BranchType, MemToReg, RegDst;
+wire                ALUSrc, Branch, RegWrite, ALUZero, MemRead, MemWrite, Jump;
 
 //Greate componentes
-assign pc_in = (rst_i == 0)? 0: final_pc;
+assign pc_in = (rst_i == 0)? 0: 
+               (jr == 1)? RSdata:
+               final_pc;
 ProgramCounter PC(
         .clk_i(clk_i),      
 	    .rst_i (rst_i),     
@@ -65,21 +67,41 @@ Decoder Decoder(
 	    );
 
 // Write Reg
-MUX_2to1 #(.size(5)) Mux_Write_Reg(
+MUX_4to1 #(.size(5)) Mux_Write_Reg(
         .data0_i(instr[20:16]),
         .data1_i(instr[15:11]),
+        .data2_i(5'd31),
+        .data3_i(5'd0),
         .select_i(RegDst),
         .data_o(RDaddr)
         );	
+
+wire jal, jr;
+assign jal = (instr[31:26] == 6'b000011)? 1: 0;
+assign jr = ({instr[31:26], instr[5:0]} == {6'b000000, 6'b001000})? 1: 0;
+
+MUX_2to1 #(.size(5)) MUX_RF_RSaddr(
+        .data0_i(instr[25:21]),
+        .data1_i(5'd29),
+        .select_i(jal),
+        .data_o(RSaddr)
+        );
+		
+MUX_2to1 #(.size(5)) MUX_RF_RTaddr(
+        .data0_i(instr[20:16]),
+        .data1_i(5'd31),
+        .select_i(jal),
+        .data_o(RTaddr)
+        );
 		
 Reg_File RF(
         .clk_i(clk_i),      
 	    .rst_i(rst_i),     
-        .RSaddr_i(instr[25:21]),  
-        .RTaddr_i(instr[20:16]),  
+        .RSaddr_i(RSaddr),  
+        .RTaddr_i(RTaddr),  
         .RDaddr_i(RDaddr),  
         .RDdata_i(RFinput), 
-        .RegWrite_i (RegWrite),
+        .RegWrite_i (RegWrite & ~jr),
         .RSdata_o(RSdata),  
         .RTdata_o(RTdata)   
         );
@@ -120,11 +142,11 @@ Data_Memory Data_Memory(
 	.data_o(DMResult)
 	);
 
-MUX_4to1 MUX_DM_Retrun(
+MUX_4to1 #(.size(32)) MUX_DM_Retrun(
         .data0_i(ALUResult),
         .data1_i(DMResult),
         .data2_i(sign_extend),
-        .data3_i(32'd0),
+        .data3_i(sum_pc_four),
         .select_i(MemToReg),
         .data_o(RFinput)
         );

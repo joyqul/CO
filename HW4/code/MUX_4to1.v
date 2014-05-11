@@ -7,17 +7,18 @@ module MUX_4to1(
                data_o
                );
 
+parameter size = 0;			   
 			
 //I/O ports               
-input   [32-1:0] data0_i;          
-input   [32-1:0] data1_i;
-input   [32-1:0] data2_i;
-input   [32-1:0] data3_i;
+input   [size-1:0] data0_i;          
+input   [size-1:0] data1_i;
+input   [size-1:0] data2_i;
+input   [size-1:0] data3_i;
 input   [2-1:0]  select_i;
-output  [32-1:0] data_o; 
+output  [size-1:0] data_o; 
 
 //Internal Signals
-wire    [32-1:0] data_o;
+wire    [size-1:0] data_o;
 
 //Main function
 assign data_o = (select_i == 0)? data0_i: 

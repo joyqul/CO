@@ -35,7 +35,7 @@ output          MemWrite_o;
 output [3-1:0]  ALUOp_o;
 output          ALUSrc_o;
 output          RegWrite_o;
-output          RegDst_o;
+output [2-1:0]  RegDst_o;
  
 //Internal Signals
 wire            Branch_o;
@@ -47,7 +47,7 @@ wire            MemWrite_o;
 wire   [3-1:0]  ALUOp_o;
 wire            ALUSrc_o;
 wire            RegWrite_o;
-wire            RegDst_o;
+wire   [2-1:0]  RegDst_o;
 
 //Parameter
 
@@ -59,8 +59,8 @@ assign Branch_o = (instr_op_i == 6'b000100)? 1: // BEQ
 
 // MemToReg_o
 assign MemToReg_o = (instr_op_i == 6'b100011)? 2'b01: // lw
-                    (instr_op_i == 6'b000011)? 2'b10: // jal
-                    (instr_op_i == 6'b001000)? 2'b10: // ADDI
+                    (instr_op_i == 6'b000011)? 2'b11: // jal
+                    (instr_op_i == 6'b001000)? 2'b00: // ADDI
                     (instr_op_i == 6'b001010)? 2'b10: // SLTI
                     2'b00;
                   
@@ -77,7 +77,9 @@ assign MemRead_o = (instr_op_i == 6'b100011)? 1: // lw
                    1'b0;
 
 // MemWrite_o
-assign MemWrite_o = (instr_op_i == 6'b101011)? 1: 0; // sw
+assign MemWrite_o = (instr_op_i == 6'b101011)? 1: // sw
+                    (instr_op_i == 6'b000011)? 1: // jal
+                    1'b0;
 
 // ALU_op_o
 assign ALUOp_o = (instr_op_i == 6'b000000)? 3'b010: // R-type & jr
@@ -87,7 +89,7 @@ assign ALUOp_o = (instr_op_i == 6'b000000)? 3'b010: // R-type & jr
                  (instr_op_i == 6'b100011)? 3'b000: // lw
                  (instr_op_i == 6'b101011)? 3'b000: // sw
                  (instr_op_i == 6'b000010)? 3'b101: // Jump
-                 (instr_op_i == 6'b000011)? 3'b000: // jal
+                 (instr_op_i == 6'b000011)? 3'b101: // jal
                  3'b0;
 // ALUSrc_o
 assign ALUSrc_o = (instr_op_i == 6'b000000)? 0: // R-type
@@ -103,12 +105,14 @@ assign RegWrite_o = (instr_op_i == 6'b000000)? 1: // R-type
                     (instr_op_i == 6'b001000)? 1: // ADDI
                     (instr_op_i == 6'b001010)? 1: // SLTI
                     (instr_op_i == 6'b100011)? 1: // lw
+                    (instr_op_i == 6'b000011)? 1: // jal
                     1'b0;
 // RegDst_o
-assign RegDst_o = (instr_op_i == 6'b000000)? 1: // R-type
-                  (instr_op_i == 6'b000100)? 0: // BEQ
-                  (instr_op_i == 6'b001000)? 0: // ADDI
-                  (instr_op_i == 6'b001010)? 0: // SLTI
-                  (instr_op_i == 6'b100011)? 0: // lw
-                  1'b0;
+assign RegDst_o = (instr_op_i == 6'b000000)? 2'b01: // R-type
+                  (instr_op_i == 6'b000100)? 2'b00: // BEQ
+                  (instr_op_i == 6'b001000)? 2'b00: // ADDI
+                  (instr_op_i == 6'b001010)? 2'b00: // SLTI
+                  (instr_op_i == 6'b100011)? 2'b00: // lw
+                  (instr_op_i == 6'b000011)? 2'b10: // jal
+                  2'b00;
 endmodule

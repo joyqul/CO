@@ -38,6 +38,7 @@ assign result_o = (ctrl_i == 4'b0000)? src1_i & src2_i: // AND
                   (ctrl_i == 4'b0010)? src1_i + src2_i: // ADD
                   (ctrl_i == 4'b0110)? src1_i - src2_i: // SUB
                   (ctrl_i == 4'b0111)? ((src1_i < src2_i)? 1: 0): // SLT
+                  (ctrl_i == 4'b1000)? src1_i: // jal
                   32'b0;
 
 endmodule
