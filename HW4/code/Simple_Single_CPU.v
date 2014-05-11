@@ -158,7 +158,7 @@ MUX_2to1 #(.size(32)) Mux_PC_Source(
 MUX_2to1 #(.size(32)) Mux_PC_Jump(
         .data0_i(JumpAddr),
         .data1_i(NoJumpAddr),
-        .select_i(pc_select),
+        .select_i(Jump),
         .data_o(final_pc)
         );	
 

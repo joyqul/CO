@@ -95,6 +95,7 @@ assign ALUSrc_o = (instr_op_i == 6'b000000)? 0: // R-type
                   (instr_op_i == 6'b001000)? 1: // ADDI
                   (instr_op_i == 6'b001010)? 1: // SLTI
                   (instr_op_i == 6'b100011)? 1: // lw
+                  (instr_op_i == 6'b101011)? 1: // sw
                   1'b0;
 // RegWrite_o
 assign RegWrite_o = (instr_op_i == 6'b000000)? 1: // R-type

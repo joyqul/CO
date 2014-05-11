@@ -43,10 +43,10 @@ module testbench;
   
   always@(posedge Clk) begin
   	$display("PC = %d", CPU.PC.pc_out_o);
-    $display("Data Memory = %d, %d, %d, %d, %d, %d, %d, %d",CPU.Data_Memory.Mem[0], CPU.Data_Memory.Mem[1], CPU.Data_Memory.Mem[2], CPU.Data_Memory.Mem[3], CPU.Data_Memory.Mem[4], CPU.Data_Memory.Mem[5], CPU.Data_Memory.Mem[6], CPU.Data_Memory.Mem[7]);
-    $display("Data Memory = %d, %d, %d, %d, %d, %d, %d, %d",CPU.Data_Memory.Mem[8], CPU.Data_Memory.Mem[9], CPU.Data_Memory.Mem[10], CPU.Data_Memory.Mem[11], CPU.Data_Memory.Mem[12], CPU.Data_Memory.Mem[13], CPU.Data_Memory.Mem[14], CPU.Data_Memory.Mem[15]);
-    $display("Data Memory = %d, %d, %d, %d, %d, %d, %d, %d",CPU.Data_Memory.Mem[16], CPU.Data_Memory.Mem[17], CPU.Data_Memory.Mem[18], CPU.Data_Memory.Mem[19], CPU.Data_Memory.Mem[20], CPU.Data_Memory.Mem[21], CPU.Data_Memory.Mem[22], CPU.Data_Memory.Mem[23]);
-    $display("Data Memory = %d, %d, %d, %d, %d, %d, %d, %d",CPU.Data_Memory.Mem[24], CPU.Data_Memory.Mem[25], CPU.Data_Memory.Mem[26], CPU.Data_Memory.Mem[27], CPU.Data_Memory.Mem[28], CPU.Data_Memory.Mem[29], CPU.Data_Memory.Mem[30], CPU.Data_Memory.Mem[31]);
+    $display("Data memory = %d, %d, %d, %d, %d, %d, %d, %d",CPU.Data_Memory.memory[0], CPU.Data_Memory.memory[1], CPU.Data_Memory.memory[2], CPU.Data_Memory.memory[3], CPU.Data_Memory.memory[4], CPU.Data_Memory.memory[5], CPU.Data_Memory.memory[6], CPU.Data_Memory.memory[7]);
+    $display("Data memory = %d, %d, %d, %d, %d, %d, %d, %d",CPU.Data_Memory.memory[8], CPU.Data_Memory.memory[9], CPU.Data_Memory.memory[10], CPU.Data_Memory.memory[11], CPU.Data_Memory.memory[12], CPU.Data_Memory.memory[13], CPU.Data_Memory.memory[14], CPU.Data_Memory.memory[15]);
+    $display("Data memory = %d, %d, %d, %d, %d, %d, %d, %d",CPU.Data_Memory.memory[16], CPU.Data_Memory.memory[17], CPU.Data_Memory.memory[18], CPU.Data_Memory.memory[19], CPU.Data_Memory.memory[20], CPU.Data_Memory.memory[21], CPU.Data_Memory.memory[22], CPU.Data_Memory.memory[23]);
+    $display("Data memory = %d, %d, %d, %d, %d, %d, %d, %d",CPU.Data_Memory.memory[24], CPU.Data_Memory.memory[25], CPU.Data_Memory.memory[26], CPU.Data_Memory.memory[27], CPU.Data_Memory.memory[28], CPU.Data_Memory.memory[29], CPU.Data_Memory.memory[30], CPU.Data_Memory.memory[31]);
     $display("RF");
     $display("R0 = %d, R1 = %d, R2 = %d, R3 = %d, R4 = %d, R5 = %d, R6 = %d, R7 = %d", CPU.RF.REGISTER_BANK[ 0], CPU.RF.REGISTER_BANK[ 1], CPU.RF.REGISTER_BANK[ 2], CPU.RF.REGISTER_BANK[ 3], CPU.RF.REGISTER_BANK[ 4], CPU.RF.REGISTER_BANK[ 5], CPU.RF.REGISTER_BANK[ 6], CPU.RF.REGISTER_BANK[ 7]);
     $display("R8 = %d, R9 = %d, R10 =%d, R11 =%d, R12 =%d, R13 =%d, R14 =%d, R15 =%d", CPU.RF.REGISTER_BANK[ 8], CPU.RF.REGISTER_BANK[ 9], CPU.RF.REGISTER_BANK[10], CPU.RF.REGISTER_BANK[11], CPU.RF.REGISTER_BANK[12], CPU.RF.REGISTER_BANK[13], CPU.RF.REGISTER_BANK[14], CPU.RF.REGISTER_BANK[15]);
