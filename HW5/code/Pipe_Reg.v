@@ -40,26 +40,21 @@ always@(posedge clk_i) begin
     end
     else if (counter == 1) begin
         counter <= 0;
-        record <= 0;
+        record <= record;
         data_o <= record;
     end
-    else if (size == 65) begin
-        if (record[31:26] == 4) begin // beq
-            counter <= 2;
-            record <= data_i;
-            data_o <= {1'b1, 64'd0};
-        end
-        else if ((data_i[31:26] == 35 || data_i[31:26] == 43 || data_i[31:26] == 8 || data_i[31:26] == 10) &&
-                (record[31:26] == 35 || record[31:26] == 43 || record[31:26] == 8 || record[31:26] == 10) &&
-                (record[20:16] == data_i[25:21])) begin // lw / sw / addi / slti
+    else if (size == 65 && record != 0) begin
+        if ((data_i[31:26] == 35 || data_i[31:26] == 43 || data_i[31:26] == 8 || data_i[31:26] == 10) &&
+                (record[31:26] == 8 || record[31:26] == 10 || record[31:26] == 35 || record[31:26] == 43) &&
+                (record[20:16] == data_i[25:21])) begin // pre: lw / sw, now: lw / sw / addi / slti
             counter <= 2;
             record <= data_i;
             data_o <= {1'b1, 64'd0};
         end
         else if ((data_i[31:26] == 35 || data_i[31:26] == 43 || data_i[31:26] == 8 || data_i[31:26] == 10) &&
                 (record[31:26] == 0) &&
-                (record[15:11] == data_i[25:21])) begin // lw / sw / addi / slti
-            counter <= 1;
+                (record[15:11] == data_i[25:21])) begin // pre: R-type, now:lw / sw / addi / slti
+            counter <= 2;
             record <= data_i;
             data_o <= {1'b1, 64'd0};
         end
@@ -73,7 +68,7 @@ always@(posedge clk_i) begin
         else if ((data_i[31:26] == 0) && 
                 (record[31:26] == 0) &&
                 (data_i[25:21] == record[15:11] || data_i[20:16] == record[15:11])) begin
-            counter <= 1;
+            counter <= 2;
             record <= data_i;
             data_o <= {1'b1, 64'd0};
         end

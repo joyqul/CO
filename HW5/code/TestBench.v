@@ -32,6 +32,8 @@ Pipe_CPU_1 cpu(
 always #(`CYCLE_TIME/2) CLK = ~CLK;	
 
 initial begin
+    $dumpfile("cpu.vcd");
+    $dumpvars(0, cpu);
     CLK = 0;
     RST = 0;
     count = 0;
@@ -42,7 +44,7 @@ initial begin
         cpu.IM.instruction_file[i] = 32'b0;
     end
 
-    $readmemb("../test/CO_P4_test_1.txt", cpu.IM.instruction_file);  //Read instruction from "CO_P4_test_1.txt"   
+    $readmemb("../test/CO_P4_test_2.txt", cpu.IM.instruction_file);  //Read instruction from "CO_P4_test_1.txt"   
     
     // data memory
     for(i=0; i<128; i=i+1)
