@@ -32,7 +32,6 @@ Pipe_CPU_1 cpu(
 always #(`CYCLE_TIME/2) CLK = ~CLK;	
 
 initial begin
-    //handle = $fopen("P4_Result.dat");
     CLK = 0;
     RST = 0;
     count = 0;
@@ -53,7 +52,6 @@ initial begin
     
     #(`CYCLE_TIME)      RST = 1;
     #(`CYCLE_TIME*20)   $stop;
-    //#(`CYCLE_TIME*20)	$fclose(handle); $stop;
 end
 
 //Print result to "CO_P4_Result.dat"
