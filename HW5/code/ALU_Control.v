@@ -36,6 +36,7 @@ begin
         2: // R-type
         begin
             case(funct_i)
+                24: ALUCtrl_o = 4'b1000; // mult
                 36: ALUCtrl_o = 4'b0000; // and   0000
                 37: ALUCtrl_o = 4'b0001; // or    0001
                 32: ALUCtrl_o = 4'b0010; // add   0010

@@ -42,15 +42,9 @@ begin
         2: result_o = src1_i + src2_i; // add   0010
         6: result_o = src1_i - src2_i; // sub   0110
         7: result_o = (src1_i < src2_i) ? 1 : 0; // slt   0111
+        8: result_o = src1_i * src2_i; // mult
         default: result_o = 0; // nop
     endcase
 end
 
 endmodule
-
-
-
-
-
-                    
-                    
