@@ -103,7 +103,8 @@ Pipe_Reg #(.size(64)) IF_ID(       //N is the total length of input/output
     .clk_i(clk_i),
     .rst_i(rst_i),
     .flush_i(0),
-    .data_i(IF_stall? 64'd0: {pc4, instruction}),
+    .stall_i(IF_stall),
+    .data_i({pc4, instruction}),
     .data_o(IF_ID_out)
 );
 
@@ -141,7 +142,8 @@ Sign_Extend Sign_Extend(
 Pipe_Reg #(.size(153)) ID_EX(
     .clk_i(clk_i),
     .rst_i(rst_i),
-    .flush_i(ID_flush),
+    .flush_i(0),
+    .stall_i(0),
     .data_i({IF_ID_out[25:21],
         reg_write, branch, reg_dst, alu_op, alu_src, mem_read, mem_write, mem_to_reg,
         IF_ID_out[63:32], read_data1, read_data2, imm_ext, IF_ID_out[20:11]}),
@@ -155,7 +157,6 @@ Hazard_Det HD(
     .EX_rt_i(ID_EX_out[9:5]),
     .EX_mem_read_i(ID_EX_out[140]),
     .IF_stall_o(IF_stall),
-    .ID_flush_o(ID_flush),
     .pc_write_o(pc_write)
 );
 
@@ -221,6 +222,7 @@ Pipe_Reg #(.size(107)) EX_MEM(
     .clk_i(clk_i),
     .rst_i(rst_i),
     .flush_i(0),
+    .stall_i(0),
     .data_i({ID_EX_out[147:146], ID_EX_out[140:138], pc_branch, alu_zero, alu_result, ID_EX_out[73:42], write_reg}),
     .data_o(EX_MEM_out)
 );
@@ -251,6 +253,7 @@ Pipe_Reg #(.size(71)) MEM_WB(
     .clk_i(clk_i),
     .rst_i(rst_i),
     .flush_i(0),
+    .stall_i(0),
     .data_i({EX_MEM_out[106], EX_MEM_out[102], dm_read, EX_MEM_out[68:37], EX_MEM_out[4:0]}),
     .data_o(MEM_WB_out)
 );
