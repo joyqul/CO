@@ -33,7 +33,7 @@ wire    [64-1:0]    IF_ID_out;
 wire    [32-1:0]    read_data1, read_data2;
 wire    [32-1:0]    imm_ext;
 
-wire    [148-1:0]   ID_EX_out;
+wire    [153-1:0]   ID_EX_out;
 
 //control signal
 wire                pc_src, alu_src, reg_dst, reg_write, branch, mem_to_reg, mem_read, mem_write;
@@ -44,7 +44,8 @@ wire    [107-1:0]   EX_MEM_out;
 /**** EX stage ****/
 wire    [32-1:0]    imm_ext_shift;
 wire    [4-1:0]     alu_control;
-wire    [32-1:0]    alu_src2, alu_result;
+wire    [32-1:0]    alu_src_1, alu_src2, alu_src2_fisrt, alu_result;
+wire    [2-1:0]     alu_rs_sel, alu_rt_sel;
 wire                alu_zero;
 wire    [5-1:0]     write_reg;
 
@@ -133,10 +134,11 @@ Sign_Extend Sign_Extend(
     .data_o(imm_ext)
 );	
 
-Pipe_Reg #(.size(148)) ID_EX(
+Pipe_Reg #(.size(153)) ID_EX(
     .clk_i(clk_i),
     .rst_i(rst_i),
-    .data_i({reg_write, branch, reg_dst, alu_op, alu_src, mem_read, mem_write, mem_to_reg,
+    .data_i({IF_ID_out[25:21],
+        reg_write, branch, reg_dst, alu_op, alu_src, mem_read, mem_write, mem_to_reg,
         IF_ID_out[63:32], read_data1, read_data2, imm_ext, IF_ID_out[20:11]}),
     .data_o(ID_EX_out)
 );
@@ -149,7 +151,7 @@ Shift_Left_Two_32 Shifter(
 );
 
 ALU ALU(
-    .src1_i(ID_EX_out[105:74]),
+    .src1_i(alu_src_1),
     .src2_i(alu_src2),
     .ctrl_i(alu_control),
     .result_o(alu_result),
@@ -163,7 +165,7 @@ ALU_Control ALU_Control(
 );
 
 MUX_2to1 #(.size(32)) Mux1(
-    .data0_i(ID_EX_out[73:42]),
+    .data0_i(alu_src2_fisrt),
     .data1_i(ID_EX_out[41:10]),
     .select_i(ID_EX_out[141]),
     .data_o(alu_src2)
@@ -174,6 +176,24 @@ MUX_2to1 #(.size(5)) Mux2(
     .data1_i(ID_EX_out[4:0]),
     .select_i(ID_EX_out[145]),
     .data_o(write_reg)
+);
+
+MUX_4to1 #(.size(32)) Mux_6_EX_rs(
+    .data0_i(ID_EX_out[105:74]),
+    .data1_i(EX_MEM_out[68:37]),
+    .data2_i(32'd0),
+    .data3_i(32'd0),
+    .select_i(alu_rs_sel),
+    .data_o(alu_src_1)
+);
+
+MUX_4to1 #(.size(32)) Mux_6_EX_rt(
+    .data0_i(ID_EX_out[73:42]),
+    .data1_i(EX_MEM_out[68:37]),
+    .data2_i(32'd0),
+    .data3_i(32'd0),
+    .select_i(alu_rt_sel),
+    .data_o(alu_src2_fisrt)
 );
 
 Adder Add_pc_branch(
@@ -189,6 +209,14 @@ Pipe_Reg #(.size(107)) EX_MEM(
     .data_o(EX_MEM_out)
 );
 
+Forwading FW(
+    .EX_rs_i(ID_EX_out[152:148]),
+    .EX_rt_i(ID_EX_out[9:5]),
+    .MEM_write_reg_i(EX_MEM_out[4:0]),
+    .MEM_reg_write_i(EX_MEM_out[106]),
+    .forwarding_rs_o(alu_rs_sel),
+    .forwarding_rt_o(alu_rt_sel)
+    );
 
 //Instantiate the components in MEM stage
 assign pc_src = EX_MEM_out[105] & EX_MEM_out[69];
