@@ -74,7 +74,7 @@ Instantiate modules
 //Instantiate the components in IF stage
 MUX_2to1 #(.size(32)) Mux0(
 	.data0_i(pc4),
-	.data1_i(pc_branch),
+	.data1_i(EX_MEM_out[101:70]),
 	.select_i(pc_src),
 	.data_o(next_pc)
 );
@@ -102,7 +102,7 @@ Adder Add_pc(
 Pipe_Reg #(.size(64)) IF_ID(       //N is the total length of input/output
     .clk_i(clk_i),
     .rst_i(rst_i),
-    .flush_i(0),
+    .flush_i(IF_flush),
     .stall_i(IF_stall),
     .data_i({pc4, instruction}),
     .data_o(IF_ID_out)
@@ -142,7 +142,7 @@ Sign_Extend Sign_Extend(
 Pipe_Reg #(.size(153)) ID_EX(
     .clk_i(clk_i),
     .rst_i(rst_i),
-    .flush_i(0),
+    .flush_i(ID_flush),
     .stall_i(0),
     .data_i({IF_ID_out[25:21],
         reg_write, branch, reg_dst, alu_op, alu_src, mem_read, mem_write, mem_to_reg,
@@ -151,12 +151,16 @@ Pipe_Reg #(.size(153)) ID_EX(
 );
 
 Hazard_Det HD(
+    .pc_src_i(pc_src),
     .ID_instr_i(IF_ID_out[31:26]),
     .ID_rs_i(IF_ID_out[25:21]),
     .ID_rt_i(IF_ID_out[20:16]),
     .EX_rt_i(ID_EX_out[9:5]),
     .EX_mem_read_i(ID_EX_out[140]),
     .IF_stall_o(IF_stall),
+    .IF_flush_o(IF_flush),
+    .ID_flush_o(ID_flush),
+    .EX_flush_o(EX_flush),
     .pc_write_o(pc_write)
 );
 
@@ -221,7 +225,7 @@ Adder Add_pc_branch(
 Pipe_Reg #(.size(107)) EX_MEM(
     .clk_i(clk_i),
     .rst_i(rst_i),
-    .flush_i(0),
+    .flush_i(EX_flush),
     .stall_i(0),
     .data_i({ID_EX_out[147:146], ID_EX_out[140:138], pc_branch, alu_zero, alu_result, ID_EX_out[73:42], write_reg}),
     .data_o(EX_MEM_out)
