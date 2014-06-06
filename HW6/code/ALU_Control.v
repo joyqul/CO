@@ -45,9 +45,12 @@ begin
 				default: ALUCtrl_o = ALUCtrl_o;
             endcase
         end
-        4: ALUCtrl_o = 4'b 0010;         // addi  0010		
-		5: ALUCtrl_o = 4'b 0111;         // slti  0111
-        default: ALUCtrl_o = 4'b0000;    // nop
+        3: ALUCtrl_o = 4'b0011;         // bneq
+        4: ALUCtrl_o = 4'b0010;         // addi  0010		
+		5: ALUCtrl_o = 4'b0111;         // slti  0111
+        6: ALUCtrl_o = 4'b0100;         // bgeq  0100
+        7: ALUCtrl_o = 4'b0101;         // bgt
+        default: ALUCtrl_o = 4'b0000;   // nop
     endcase
 end
 

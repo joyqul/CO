@@ -40,6 +40,9 @@ begin
         0: result_o = src1_i & src2_i; // and   0000
         1: result_o = src1_i | src2_i; // or    0001
         2: result_o = src1_i + src2_i; // add   0010
+        3: result_o = (src1_i != src2_i)? 0: 1;   // bneq
+        4: result_o = (src1_i >= src1_i)? 0: 1;   // bge
+        5: result_o = (src1_i > src1_i)? 0: 1;   // bgt
         6: result_o = src1_i - src2_i; // sub   0110
         7: result_o = (src1_i < src2_i) ? 1 : 0; // slt   0111
         8: result_o = src1_i * src2_i; // mult

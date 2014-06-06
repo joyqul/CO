@@ -56,12 +56,18 @@ begin
             ALU_op_o = 3'b000;
         4: // beq
             ALU_op_o = 3'b001;
+        5: // bne
+            ALU_op_o = 3'b011;
+        1: // bge
+            ALU_op_o = 3'b110;
+        7: // bgt
+            ALU_op_o = 3'b111;
         8: // addi
             ALU_op_o = 3'b100;
         10: // slti
             ALU_op_o = 3'b101;
         default: // nop
-            ALU_op_o = 3'b111;
+            ALU_op_o = 3'b000;
     endcase
 end
 
@@ -91,7 +97,7 @@ end
 
 always@(instr_op_i)
 begin
-    if(instr_op_i == 4) // beq
+    if(instr_op_i == 4 || instr_op_i == 5 || instr_op_i == 1 || instr_op_i == 7) // beq
         Branch_o = 1;
     else
         Branch_o = 0;
