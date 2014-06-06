@@ -24,7 +24,7 @@ input rst_i;
 Internal signal
 ****************************************/
 /**** IF stage ****/
-wire    [32-1:0]    pc, pc4, next_pc, pc_branch, stall_pc;
+wire    [32-1:0]    pc, pc4, next_pc, pc_branch;
 wire    [32-1:0]    instruction;
 
 wire    [64-1:0]    IF_ID_out;
@@ -70,17 +70,10 @@ Instantiate modules
 ****************************************/
 //Instantiate the components in IF stage
 MUX_2to1 #(.size(32)) Mux0(
-	.data0_i(stall_pc),
+	.data0_i(pc4),
 	.data1_i(pc_branch),
 	.select_i(pc_src),
 	.data_o(next_pc)
-);
-
-MUX_2to1 #(.size(32)) MuxBonus(
-	.data0_i(pc4),
-	.data1_i(pc),
-	.select_i(stall),
-	.data_o(stall_pc)
 );
 
 ProgramCounter PC(
@@ -102,11 +95,11 @@ Adder Add_pc(
 );
 
 		
-Pipe_Reg #(.size(65)) IF_ID(       //N is the total length of input/output
+Pipe_Reg #(.size(64)) IF_ID(       //N is the total length of input/output
     .clk_i(clk_i),
     .rst_i(rst_i),
-    .data_i({1'b0, pc4, instruction}),
-    .data_o({stall, IF_ID_out})
+    .data_i({pc4, instruction}),
+    .data_o(IF_ID_out)
 );
 
 
