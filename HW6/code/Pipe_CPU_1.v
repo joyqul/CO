@@ -34,6 +34,8 @@ wire    [32-1:0]    read_data1, read_data2;
 wire    [32-1:0]    imm_ext;
 
 wire    [153-1:0]   ID_EX_out;
+wire                pc_write, IF_stall;
+wire                IF_flush, ID_flush, EX_flush;
 
 //control signal
 wire                pc_src, alu_src, reg_dst, reg_write, branch, mem_to_reg, mem_read, mem_write;
@@ -81,6 +83,7 @@ ProgramCounter PC(
     .clk_i(clk_i),
     .rst_i(rst_i),
     .pc_in_i(next_pc),
+    .pc_write_i(pc_write),
     .pc_out_o(pc)
 );
 
@@ -99,7 +102,8 @@ Adder Add_pc(
 Pipe_Reg #(.size(64)) IF_ID(       //N is the total length of input/output
     .clk_i(clk_i),
     .rst_i(rst_i),
-    .data_i({pc4, instruction}),
+    .flush_i(0),
+    .data_i(IF_stall? 64'd0: {pc4, instruction}),
     .data_o(IF_ID_out)
 );
 
@@ -137,12 +141,23 @@ Sign_Extend Sign_Extend(
 Pipe_Reg #(.size(153)) ID_EX(
     .clk_i(clk_i),
     .rst_i(rst_i),
+    .flush_i(ID_flush),
     .data_i({IF_ID_out[25:21],
         reg_write, branch, reg_dst, alu_op, alu_src, mem_read, mem_write, mem_to_reg,
         IF_ID_out[63:32], read_data1, read_data2, imm_ext, IF_ID_out[20:11]}),
     .data_o(ID_EX_out)
 );
 
+Hazard_Det HD(
+    .ID_instr_i(IF_ID_out[31:26]),
+    .ID_rs_i(IF_ID_out[25:21]),
+    .ID_rt_i(IF_ID_out[20:16]),
+    .EX_rt_i(ID_EX_out[9:5]),
+    .EX_mem_read_i(ID_EX_out[140]),
+    .IF_stall_o(IF_stall),
+    .ID_flush_o(ID_flush),
+    .pc_write_o(pc_write)
+);
 
 //Instantiate the components in EX stage	   
 Shift_Left_Two_32 Shifter(
@@ -181,7 +196,7 @@ MUX_2to1 #(.size(5)) Mux2(
 MUX_4to1 #(.size(32)) Mux_6_EX_rs(
     .data0_i(ID_EX_out[105:74]),
     .data1_i(EX_MEM_out[68:37]),
-    .data2_i(32'd0),
+    .data2_i(write_data),
     .data3_i(32'd0),
     .select_i(alu_rs_sel),
     .data_o(alu_src_1)
@@ -190,7 +205,7 @@ MUX_4to1 #(.size(32)) Mux_6_EX_rs(
 MUX_4to1 #(.size(32)) Mux_6_EX_rt(
     .data0_i(ID_EX_out[73:42]),
     .data1_i(EX_MEM_out[68:37]),
-    .data2_i(32'd0),
+    .data2_i(write_data),
     .data3_i(32'd0),
     .select_i(alu_rt_sel),
     .data_o(alu_src2_fisrt)
@@ -205,6 +220,7 @@ Adder Add_pc_branch(
 Pipe_Reg #(.size(107)) EX_MEM(
     .clk_i(clk_i),
     .rst_i(rst_i),
+    .flush_i(0),
     .data_i({ID_EX_out[147:146], ID_EX_out[140:138], pc_branch, alu_zero, alu_result, ID_EX_out[73:42], write_reg}),
     .data_o(EX_MEM_out)
 );
@@ -214,6 +230,8 @@ Forwading FW(
     .EX_rt_i(ID_EX_out[9:5]),
     .MEM_write_reg_i(EX_MEM_out[4:0]),
     .MEM_reg_write_i(EX_MEM_out[106]),
+    .WB_write_reg_i(MEM_WB_out[4:0]),
+    .WB_reg_write_i(MEM_WB_out[70]),
     .forwarding_rs_o(alu_rs_sel),
     .forwarding_rt_o(alu_rt_sel)
     );
@@ -232,6 +250,7 @@ Data_Memory DM(
 Pipe_Reg #(.size(71)) MEM_WB(
     .clk_i(clk_i),
     .rst_i(rst_i),
+    .flush_i(0),
     .data_i({EX_MEM_out[106], EX_MEM_out[102], dm_read, EX_MEM_out[68:37], EX_MEM_out[4:0]}),
     .data_o(MEM_WB_out)
 );
